@@ -1,0 +1,95 @@
+class ChunkProcessor {
+  constructor(maxConcurrency = 3) {
+    this.cancelableQueue = [];
+    this.processingPromises = [];
+    this.processedChunks = [];
+    this.maxConcurrency = maxConcurrency;
+    this.maxObservedConcurrency = 0;
+  }
+
+  delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async processChunk(chunk) {
+    await this.delay(chunk[2]);
+    console.log(`Processed chunk ${chunk[0]}`);
+    return chunk;
+  }
+
+  processNextChunk() {
+    if (this.processingPromises.length >= this.maxConcurrency) {
+      return;
+    }
+
+    let nextChunk = null;
+
+    if (this.cancelableQueue.length > 0) {
+      nextChunk = this.cancelableQueue.shift();
+    }
+
+    if (nextChunk) {
+      const processingPromise = this.processChunk(nextChunk)
+        .then((chunk) => {
+          this.processedChunks.push(chunk[0]);
+          this.processingPromises = this.processingPromises.filter(
+            (promise) => promise !== processingPromise
+          );
+          this.processNextChunk();
+        })
+        .catch((error) => {
+          console.log(`Error in chunk ${nextChunk[0]}: ${error.message}`);
+          this.processingPromises = this.processingPromises.filter(
+            (promise) => promise !== processingPromise
+          );
+          this.processNextChunk();
+        });
+
+      this.processingPromises.push(processingPromise);
+    }
+  }
+
+  addChunkToQueue(chunk) {
+    if (chunk[1]) {
+      this.cancelableQueue.push(chunk);
+    } else {
+      this.processNextNonCancelableChunk(chunk);
+    }
+  }
+
+  processNextNonCancelableChunk(chunk) {
+    this.cancelableQueue = [];
+
+    const processingPromise = this.processChunk(chunk)
+      .then((processedChunk) => {
+        this.processedChunks.push(processedChunk[0]);
+        this.processingPromises = this.processingPromises.filter(
+          (promise) => promise !== processingPromise
+        );
+        this.processNextChunk();
+      })
+      .catch((error) => {
+        console.log(`Error in chunk ${chunk[0]}: ${error.message}`);
+        this.processingPromises = this.processingPromises.filter(
+          (promise) => promise !== processingPromise
+        );
+        this.processNextChunk();
+      });
+
+    this.processingPromises.push(processingPromise);
+  }
+
+  async waitForProcessing() {
+    while (this.processingPromises.length > 0) {
+      await Promise.all(this.processingPromises);
+    }
+
+    if (this.cancelableQueue.length > 0) {
+      const lastChunk = this.cancelableQueue.pop();
+      await this.processChunk(lastChunk);
+      this.processedChunks.push(lastChunk[0]);
+    }
+  }
+}
+
+module.exports = ChunkProcessor;
