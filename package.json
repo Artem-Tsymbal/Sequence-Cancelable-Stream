@@ -1,13 +1,36 @@
 {
-  "name": "cancelable_chunks",
+  "name": "sequence-cancelable-stream",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "A stream processor that handles sequential data chunks with cancelation capabilities",
+  "main": "src/index.js",
+  "author": "",
   "license": "MIT",
-  "dependencies": {},
+  "keywords": [
+    "stream",
+    "processor",
+    "chunks",
+    "cancelable",
+    "concurrent",
+    "queue"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/sequence-cancelable-stream"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "examples:basic": "node examples/basic-usage.js",
+    "examples:custom": "node examples/custom-processor.js",
+    "examples:promise": "node examples/promise-integration.js",
+    "examples:all": "npm run examples:basic && npm run examples:custom && npm run examples:promise"
+  },
   "devDependencies": {
     "jest": "^29.7.0"
   },
-  "scripts": {
-    "test": "jest"
+  "dependencies": {},
+  "engines": {
+    "node": ">=12.0.0"
   }
 }
