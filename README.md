@@ -1,4 +1,4 @@
-# ChunkProcessor
+# Chunk-Processor
 
 A JavaScript library for processing sequential data chunks with cancelation capabilities.
 
@@ -39,7 +39,3 @@ console.log(processor.processedChunks);
 ```
 npm test
 ```
-
-## License
-
-MIT
